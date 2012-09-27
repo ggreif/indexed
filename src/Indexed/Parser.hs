@@ -57,19 +57,11 @@ data N' (n :: N) where
   Z :: N' Z'
   S :: N' n -> N' (S' n)
 
-data Interv :: (i, i) -> * where
+data Interv :: (N, N) -> * where
   P :: N' a -> N' b -> Interv '(a,b)
 
-{- I get:
+t0 :: Thrist Interv '(Z', Z')
+t0 = P Z Z :- P Z Z :- Nil
 
-src/Indexed/Parser.hs:61:3:
-    Data constructor `P' cannot be GADT-like in its *kind* arguments
-      P :: forall (a :: N) (b :: N).
-           N' a -> N' b -> Interv N ('(,) N N a a)
-    In the definition of data constructor `P'
-    In the data declaration for `Interv'
-
--}
-
-t1 :: Thrist Interv '(Z', Z')
-t1 = P Z Z :- P Z Z :- Nil
+t1 :: Thrist Interv '(Z', S' Z')
+t1 = P Z Z :- P Z (S Z) :- Nil
