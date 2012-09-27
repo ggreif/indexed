@@ -18,11 +18,8 @@ type (~~>) f g h = forall x. f x -> g x -> h x
 class IApplicative f => IAlternative f where
   (<|>) :: (f a ~~> f a) (f a)
 
--- class IAlternative f => IParser f where
---   (<|>) :: (f a ~~> f a) (f a)
 
-
--- this comes from attoparsec
+-- this basically comes from attoparsec
 newtype Parser f a = Parser {
   runParser :: forall r. Input f -> Added f -> More
                                  -> Failure f   r
@@ -54,11 +51,16 @@ data N' (n :: N) where
   Z :: N' Z'
   S :: N' n -> N' (S' n)
 
+infixr 6 :&
+
 data Interv :: (N, N) -> * where
-  P :: N' a -> N' b -> Interv '(a,b)
+  (:&) :: N' a -> N' b -> Interv '(a,b)
+
+
+-- Tests
 
 t0 :: Thrist Interv '(Z', Z')
-t0 = P Z Z :- P Z Z :- Nil
+t0 = Z:&Z :- Z:&Z :- Nil
 
 t1 :: Thrist Interv '(Z', S' Z')
-t1 = P Z Z :- P Z (S Z) :- Nil
+t1 = Z:&Z :- Z:&S Z :- Nil
