@@ -20,6 +20,7 @@ class IApplicative f => IAlternative f where
 
 
 -- this basically comes from attoparsec
+{-
 newtype Parser f a = Parser {
   runParser :: forall r. Input f -> Added f -> More
                                  -> Failure f   r
@@ -30,9 +31,9 @@ newtype Parser f a = Parser {
 type Failure f   r = Input f -> Added f -> More -> [String] -> String -> IResult f r
 type Success f a r = Input f -> Added f -> More -> a -> IResult f r
 
-data R f r x = Fail' (f x) [String] String
+data R f r x = Fail (f x) [String] String
              | Partial (f x -> R f r x)
-             | Done' (f x) r
+             | Done (f x) r
 type IResult f r = forall x. R f r x
 
 
@@ -40,8 +41,17 @@ newtype Input f = I {unI :: forall x. f x}
 newtype Added f = A {unA :: forall x. f x}
 data More = Complete | Incomplete deriving (Eq, Show)
 
---instance IFunctor IResult
+instance IFunctor IResult where
+  imap f (Fail x es e) = Fail (f x) es e
+
 --instance IFunctor Parser
+-}
+
+-- understand the concept first
+--
+data Parser :: ((N,N) -> *) -> (N,N) -> * where
+  OneChar :: Char -> Parser p '(a,S' a)
+  PlusPlus :: Parser p '(a,S' (S' a))
 
 -- Build a thrist indexed by a pair of naturals
 
@@ -64,3 +74,4 @@ t0 = Z:&Z :- Z:&Z :- Nil
 
 t1 :: Thrist Interv '(Z', S' Z')
 t1 = Z:&Z :- Z:&S Z :- Nil
+
