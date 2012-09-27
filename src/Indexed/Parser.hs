@@ -32,9 +32,6 @@ newtype Parser f a = Parser {
 
 type Failure f   r = Input f -> Added f -> More -> [String] -> String -> IResult f r
 type Success f a r = Input f -> Added f -> More -> a -> IResult f r
---data IResult f r = forall x. Fail (f x) [String] String
---                 -- | Partial (f ~> IResult f r)
---                 | forall x. Done (f x) r
 
 data R f r x = Fail' (f x) [String] String
              | Partial (f x -> R f r x)
