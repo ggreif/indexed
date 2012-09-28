@@ -79,5 +79,13 @@ t1 = Z:&Z :- Z:&S Z :- Nil
 
 -- counting Char Thrist
 
-t2 :: Thrist (AtInc Char) '(Z', S' (S' (S' (S' (S' (S' Z'))))))
+type One = S' Z'
+type Two = S' One
+type Three = S' Two
+type Four = S' Three
+type Five = S' Four
+type Six = S' Five
+type Seven = S' Six
+
+t2 :: Thrist (AtInc Char) '(Z', Six)
 t2 = AtInc 'H' :- AtInc 'e' :- AtInc 'l' :- AtInc 'l' :- AtInc 'o' :- AtInc '!' :- Nil
