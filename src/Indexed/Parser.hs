@@ -66,6 +66,8 @@ infixr 6 :&
 data Interv :: (N, N) -> * where
   (:&) :: N' a -> N' b -> Interv '(a,b)
 
+data AtInc :: * -> (N, N) -> * where
+  AtInc :: a -> AtInc a '(k, S' k)
 
 -- Tests
 
@@ -75,3 +77,7 @@ t0 = Z:&Z :- Z:&Z :- Nil
 t1 :: Thrist Interv '(Z', S' Z')
 t1 = Z:&Z :- Z:&S Z :- Nil
 
+-- counting Char Thrist
+
+t2 :: Thrist (AtInc Char) '(Z', S' (S' (S' (S' (S' (S' Z'))))))
+t2 = AtInc 'H' :- AtInc 'e' :- AtInc 'l' :- AtInc 'l' :- AtInc 'o' :- AtInc '!' :- Nil
