@@ -4,6 +4,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Indexed.Parser where
 
@@ -16,7 +17,11 @@ import Indexed.Thrist
 type (~~>) f g h = forall x. f x -> g x -> h x
 
 class IApplicative f => IAlternative f where
-  (<|>) :: (f a ~~> f a) (f a)
+  --type Alt :: (i -> *) -> (i -> *) -> (i -> *)
+  --(<|>) :: (f a ~~> f b) (f (Alt a b))
+  type Alt :: i -> i -> i
+  (<|>) :: f a x -> f a y -> f a (Alt x y)
+
 
 
 -- this basically comes from attoparsec
@@ -52,6 +57,16 @@ instance IFunctor IResult where
 data Parser :: ((N,N) -> *) -> (N,N) -> * where
   OneChar :: Char -> Parser p '(a,S' a)
   PlusPlus :: Parser p '(a,S' (S' a))
+
+instance IFunctor Parser where
+  imap _ PlusPlus = PlusPlus
+
+instance IApplicative Parser where
+  mf /*/ ma = undefined -- mf !>= \f -> ma !>= \a -> ireturnAt (f a)
+
+instance IAlternative Parser where
+
+alt = PlusPlus <|> OneChar 'x'
 
 -- Build a thrist indexed by a pair of naturals
 
