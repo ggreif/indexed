@@ -16,10 +16,12 @@ import Indexed.Thrist
 -- | A binatural transformation from @f@ and @g@ to @h@
 type (~~>) f g h = forall x. f x -> g x -> h x
 
+type family Alt (t :: k) (u :: k) :: k
+
 class IApplicative f => IAlternative f where
   --type Alt :: (i -> *) -> (i -> *) -> (i -> *)
   --(<|>) :: (f a ~~> f b) (f (Alt a b))
-  type Alt :: i -> i -> i
+  --type Alt :: i -> i -> i
   (<|>) :: f a x -> f a y -> f a (Alt x y)
 
 
@@ -57,6 +59,28 @@ instance IFunctor IResult where
 data Parser :: ((N,N) -> *) -> (N,N) -> * where
   OneChar :: Char -> Parser p '(a,S' a)
   PlusPlus :: Parser p '(a,S' (S' a))
+  Choice :: Parser p '(a, a') -> Parser p '(a, a'') -> Parser p '(a, Alt a' a'')
+
+{- Okay, here is what I believe is at the heart of things:
+
+   @[Char]@ is to @Parsec a@
+as
+   @Thrist (At Char)@ is to @IParser (At a)@
+
+And we can compare the signatures now
+
+runParsec :: Parsec a -> [Char] -> (Maybe a, [Char])
+
+vs. (simplified)
+
+runIParser :: IParser (At a) -> Thrist (At Char) -> (Maybe (At a), Thrist (At Char))
+
+plus, we need to add the positional information
+
+runIParser :: IParser (At a) (k, l) -> Thrist (At Char) (k, m) -> Maybe (At a (k, l), Thrist (At Char) (l, m))
+
+-}
+
 
 instance IFunctor Parser where
   imap _ PlusPlus = PlusPlus
@@ -65,12 +89,20 @@ instance IApplicative Parser where
   mf /*/ ma = undefined -- mf !>= \f -> ma !>= \a -> ireturnAt (f a)
 
 instance IAlternative Parser where
+  --type Alt a a = a
+  -- l <|> r = Choice l r -- this does not typecheck
 
-alt = PlusPlus <|> OneChar 'x'
+
+data family PAlt (t :: (N,N)) :: *
+
+--alt :: Parser '(n, Alt (S' (S' n)) (S' n))
+--alt :: Parser PAlt '(n, S' n)
+--alt :: Parser PAlt '(n, Alt (S' (S' n)) (S' n))
+--alt = PlusPlus <|> OneChar 'x'
 
 -- Build a thrist indexed by a pair of naturals
 
-data N = Z' | S' N
+data N = Z' | S' N | OR N N
 
 data N' (n :: N) where
   Z :: N' Z'
@@ -83,6 +115,8 @@ data Interv :: (N, N) -> * where
 
 data AtInc :: * -> (N, N) -> * where
   AtInc :: a -> AtInc a '(k, S' k)
+  AtPar :: AtInc a '(k, k') -> AtInc a '(k, k') -> AtInc a '(k, k')
+  AtComb :: AtInc a '(k, k') -> AtInc a '(k, k'') -> AtInc a '(k, OR k' k'')
 
 -- Tests
 
